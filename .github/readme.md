@@ -1,83 +1,114 @@
-## GitHub Runner Workflow for Continuous Integration
+## Dockerizing a Python App
 
-In this section, we will add a basic GitHub Actions workflow to automate the build and test process for your Dockerized Python app. GitHub Actions allows you to define custom workflows that run in response to various events, such as pushing code to a repository.
+This guide will walk you through the process of Dockerizing a Python application built with FastAPI.
 
-### Step 1: Go to `.github` directory
+### Prerequisites
 
-In your project directory, navigate into the directory named `.github/workflows`
+Before you begin, make sure you have the following prerequisites:
 
-### Step 2: Create `docker-flow.yml` File
+1. Docker installed on your machine. You can download and install Docker from the official website: [https://www.docker.com/](https://www.docker.com/)
 
-Inside the `.github/workflows` directory, create a new file named `docker-flow.yml`. This file will contain the github runner configuration.
+2. Basic understanding of Python, Docker & Git
 
-Open the `docker-flow.yml` file in a text editor and paste the following code:
+### Step 1: Fork & clone the repo
 
-<details> 
-    <summary>You can try and create workflow by yourself or use the following code</summary>
-    
-    name: Build - Test - Push
-    
-    on:
-      push:
-        branches:
-          - master
-    
-    jobs:
-      build:
-        runs-on: ubuntu-latest
-    
-        steps:
-          - name: Checkout repository
-            uses: actions/checkout@v3
-    
-          - name: Set up Python
-            uses: actions/setup-python@v4
-            with:
-              python-version: 3.9
-    
-          - name: Build and test Docker image
-            run: |
-              docker-compose build
-              docker-compose run --rm app pytest tests/
-    
-          - name: Log in to the Container registry
-            uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
-            with:
-              registry: ghcr.io
-              username: ${{ github.actor }}
-              password: ${{ secrets.GITHUB_TOKEN }}
-          
-          - name: Extract metadata (tags, labels) for Docker
-            id: meta
-            uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
-            with:
-              images: |
-                my-docker-hub-namespace/my-docker-hub-repository
-                ghcr.io/${{ github.repository }}
-          
-          - name: Build and push Docker images
-            uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
-            with:
-              context: .
-              push: true
-              tags: ${{ steps.meta.outputs.tags }}
-              labels: ${{ steps.meta.outputs.labels }}
-</details>
-
-Make sure to replace `your-dockerhub-username` with your Docker Hub username.
-
-Save the `docker-flow.yml` file.
-
-### Step 3: Commit and Push Changes
-
-Commit the `.github` directory and its contents to your repository.
+First, let's fork the repository then clone it and navigate into it:
 
 ```bash
-git add .github
-git commit -m "Add GitHub Actions workflow"
-git push origin master
+git clone https://github.com/YOUR_USER/summer-devops.git
+cd summer-devops
 ```
 
-### Step 4: Job checking
+### Step 2: Dockerfile
 
-After the merge was completed, a job will start. You will see a new tab on your repository named: `Actions`, click on that and navigate to the latest job.
+The Dockerfile is a text file that contains a set of instructions to build a Docker image. Use the empty file named `Dockerfile` in the project directory and open it in a text editor.
+
+<details> 
+    <summary>You can try and create the Dockerfile yourself or use the following code</summary>
+
+    # Use the official Python base image
+    FROM python:3.9-slim
+    
+    # Set the working directory inside the container
+    WORKDIR /app
+    
+    # Copy the requirements.txt file to the container
+    COPY requirements.txt .
+    
+    # Install the Python dependencies
+    RUN pip install --no-cache-dir -r requirements.txt
+    
+    # Copy the rest of the application code to the container
+    COPY ./app .
+    
+    # Expose the port on which the FastAPI app will run
+    EXPOSE 8000
+    
+    # Start the FastAPI app
+    CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+</details>
+
+### Step 3: Docker Compose
+
+Docker Compose is a tool for defining and running multi-container Docker applications. It allows you to specify the services, networks, and volumes required for your application in a YAML file.
+
+Use the existent file named `docker-compose.yml` in the project directory and open it in a text editor.
+
+<details> 
+    <summary>You can try and create the docker-compose.yaml yourself or use the following code</summary>
+
+    version: '3'
+    services:
+      app:
+        build:
+          context: .
+          dockerfile: Dockerfile
+        ports:
+          - 8000:8000
+
+</details> 
+
+### Step 4: Build and Run the Docker Container
+
+Open a terminal or command prompt and navigate to the project directory (`summer-devops`).
+
+To build the Docker image, run one of the following commands:
+
+```bash
+docker build -t dockerized-python-app .
+```
+
+or
+
+```bash
+docker-compose build
+```
+
+Once the build process is complete, you can run the Docker container with one of the following commands:
+
+```bash
+docker run --it --rm -p 8000:8000 dockerized-python-app
+```
+
+or
+
+```bash
+docker-compose up
+```
+
+### Step 5: Test the App
+
+Open your web browser and visit `http://localhost:8000/` to see the "OK" message. You can also try accessing `http://localhost:8000/af` to see the "Freak" message.
+
+Congratulations! You have successfully Dockerized your Python.
+
+### Additional Notes
+
+- You can stop the running Docker container by pressing `Ctrl+C` in the terminal or command prompt where the container is running.
+
+- If you make changes to your application code or Dockerfile, you will need to rebuild the Docker image using the `docker-compose build` command before running it again.
+
+- Remember to shut down the Docker container when you're done by running `docker-compose down` or by pressing `Ctrl+C` in the project directory.
+
+That's it! You now have a Dockerized Python app. Happy coding!
