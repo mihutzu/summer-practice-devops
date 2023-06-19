@@ -12,11 +12,11 @@ In this section, we will add a basic GitHub Actions workflow to automate the bui
 
 ### Step 1: Go to `.github` directory
 
-In your project directory, navigate into the directory named `.github/workflows`
+In your project directory, navigate into the directory named `.github`
 
-### Step 2: Create workflow file
+### Step 2: Create the workflow file
 
-Inside the `.github/workflows` directory, create a new file and give and add `.yml` extension to it. This file will contain the github runner configuration.
+Inside the `.github` directory, create a new folder `workflows` and inside that directory create a new file, give it a name and add `.yml` extension to it. This file will contain the github runner configuration.
 
 <details> 
     <summary>You can try and create the workflow yourself or use the following code</summary>
